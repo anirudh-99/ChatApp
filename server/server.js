@@ -4,6 +4,7 @@ import Messages from "./models/message.model.js";
 import Pusher from "pusher";
 import cors from "cors";
 
+
 //app config
 const app = express();
 const port = process.env.PORT || 3001;
@@ -38,7 +39,7 @@ mongoose
       if (change.operationType === "insert") {
         const message = change.fullDocument;
         pusher.trigger("messages", "inserted", {
-          name: "anirudh",
+          ...message
         });
       }
     });
