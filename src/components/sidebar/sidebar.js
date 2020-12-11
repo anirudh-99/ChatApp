@@ -1,6 +1,7 @@
-import React from "react";
+import React,{useState,useEffect} from "react";
 import classes from "./sidebar.module.css";
 
+//import components
 import SidebarChat from "../sidebarChat/sidebarChat";
 
 //material-ui imports
@@ -11,6 +12,12 @@ import { Avatar, IconButton } from "@material-ui/core";
 import SearchOutlinedIcon from "@material-ui/icons/SearchOutlined";
 
 function Sidebar() {
+  const [rooms,setRooms] = useState([]);
+
+  useEffect(() => {
+
+  });
+
   return (
     <div className={classes.Sidebar}>
       <div className={classes.Sidebar__header}>
@@ -36,7 +43,7 @@ function Sidebar() {
       </div>
 
       <div className={classes.Sidebar__chats}>
-        <SidebarChat />
+        <SidebarChat addNewChat/>
         <SidebarChat />
         <SidebarChat />
       </div>
