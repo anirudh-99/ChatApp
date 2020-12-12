@@ -1,11 +1,14 @@
 import express from "express";
 import mongoose from "mongoose";
-import Messages from "./models/message.model.js";
 import Pusher from "pusher";
 import cors from "cors";
+import morgan from "morgan";
 
+//importing models
+import Messages from "./models/message.model.js";
+import Rooms from "./models/room.model.js";
 
-//app config
+//------------app config-------------
 const app = express();
 const port = process.env.PORT || 3001;
 
@@ -17,11 +20,12 @@ const pusher = new Pusher({
   useTLS: true,
 });
 
-//middleware
+//------------middleware--------------
+app.use(morgan());
 app.use(express.json());
 app.use(cors());
 
-//db config
+//-------------------db config-----------------
 const connectionURL =
   "mongodb+srv://anirudh:5vJLI9g62rWusBUc@cluster0.pjikp.mongodb.net/whtasappDb?retryWrites=true&w=majority";
 
@@ -34,18 +38,28 @@ mongoose
   .then(() => {
     console.log("db connection successful");
 
-    //Change stream
+    //Change stream for "Messages" collection
     Messages.watch().on("change", (change) => {
       if (change.operationType === "insert") {
         const message = change.fullDocument;
         pusher.trigger("messages", "inserted", {
-          ...message
+          ...message,
+        });
+      }
+    });
+
+    //change stream for "Rooms" collection
+    Rooms.watch().on("change", (change) => {
+      if (change.operationType === "insert") {
+        const room = change.fullDocument;
+        pusher.trigger("rooms", "inserted", {
+          ...room,
         });
       }
     });
   });
 
-//api routes
+//-------------api routes--------------------------
 app.get("/", (req, res) => res.status(200).send("hello world"));
 
 app.get("/messages", (req, res) => {
@@ -54,6 +68,7 @@ app.get("/messages", (req, res) => {
     .catch((err) => res.status(500).send(err));
 });
 
+// route for creating new message
 app.post("/messages", (req, res) => {
   const message = req.body;
 
@@ -64,6 +79,21 @@ app.post("/messages", (req, res) => {
       res.status(201).send(data);
     }
   });
+});
+
+app.get("/rooms", (req, res) => {
+  Rooms.find()
+    .then((data) => res.status(200).send(data))
+    .catch((err) => res.status(500).send(err));
+});
+
+// route for creating new rooms
+app.post("/rooms", (req, res) => {
+  const room = req.body;
+
+  Rooms.create(room)
+    .then((data) => res.status(201).send(data))
+    .catch((err) => res.status(500).send(err));
 });
 
 //listen

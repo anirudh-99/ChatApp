@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import React, { useState,useEffect } from "react";
 import classes from "./chat.module.css";
 import { Avatar, IconButton } from "@material-ui/core";
 import axios from '../../axios';
+import Pusher from 'pusher-js';
 
 //material-ui imports
 import SearchOutlinedIcon from "@material-ui/icons/SearchOutlined";
@@ -10,8 +11,34 @@ import MoreVertIcon from "@material-ui/icons/MoreVert";
 import InsertEmoticonIcon from "@material-ui/icons/InsertEmoticon";
 import MicIcon from "@material-ui/icons/Mic";
 
-function Chat(props) {
+function Chat() {
   const [input, setInput] = useState("");
+  const [messages, setMessages] = useState([]);
+
+  //fetch messages initially
+  useEffect(() => {
+    axios.get("/messages").then((res) => {
+      setMessages(res.data);
+    });
+  }, []);
+
+  //listener for a channel in pusher
+  useEffect(() => {
+    const pusher = new Pusher("f891c6ff78f3484303a0", {
+      cluster: "ap2",
+    });
+
+    const channel = pusher.subscribe("messages");
+    channel.bind("inserted", (newMessage) => {
+      // alert(JSON.stringify(newMessage));
+      setMessages([...messages, newMessage]);
+    });
+
+    return () => {
+      channel.unbind_all();
+      channel.unsubscribe();
+    };
+  }, [messages]);
 
   const sendMessage = async (e) => {
     e.preventDefault();
@@ -49,13 +76,14 @@ function Chat(props) {
       </div>
 
       <div className={classes.Chat__body}>
-        {props.messages.map((message) => {
+        {messages.map((message,index) => {
           return (
             <p
               className={[
                 classes.Chat__message,
                 message.received ? classes.Chat__receiver : "",
               ].join(" ")}
+              key={index}
             >
               <span className={classes.Chat__name}>{message.name}</span>
               {message.message}

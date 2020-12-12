@@ -1,5 +1,7 @@
-import React,{useState,useEffect} from "react";
+import React, { useState, useEffect } from "react";
 import classes from "./sidebar.module.css";
+import axios from "../../axios";
+import Pusher from "pusher-js";
 
 //import components
 import SidebarChat from "../sidebarChat/sidebarChat";
@@ -12,11 +14,33 @@ import { Avatar, IconButton } from "@material-ui/core";
 import SearchOutlinedIcon from "@material-ui/icons/SearchOutlined";
 
 function Sidebar() {
-  const [rooms,setRooms] = useState([]);
+  let [rooms, setRooms] = useState([]);
 
   useEffect(() => {
+    axios
+      .get("/rooms")
+      .then((res) => {
+        setRooms(res.data);
+      })
+      .catch((err) => console.log(err));
+  }, []);
 
-  });
+  useEffect(() => {
+    const pusher = new Pusher("f891c6ff78f3484303a0", {
+      cluster: "ap2",
+    });
+
+    const channel = pusher.subscribe("rooms");
+    channel.bind("inserted", (newRoom) => {
+      // alert(JSON.stringify(newMessage));
+      setRooms([...rooms, newRoom]);
+    });
+
+    return () => {
+      channel.unbind_all();
+      channel.unsubscribe();
+    };
+  }, [rooms]);
 
   return (
     <div className={classes.Sidebar}>
@@ -43,9 +67,10 @@ function Sidebar() {
       </div>
 
       <div className={classes.Sidebar__chats}>
-        <SidebarChat addNewChat/>
-        <SidebarChat />
-        <SidebarChat />
+        <SidebarChat addNewChat />
+        {rooms.map((room) => {
+          return <SidebarChat key={room._id} id={room._id} name={room.name} />;
+        })}
       </div>
     </div>
   );

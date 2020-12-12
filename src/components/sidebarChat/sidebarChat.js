@@ -1,35 +1,35 @@
 import React, { useState, useEffect } from "react";
 import classes from "./sidebarChat.module.css";
+import axios from "../../axios";
 
 //material-ui imports
 import { Avatar } from "@material-ui/core";
 
-function SidebarChat({addNewChat}) {
+function SidebarChat({ addNewChat, id, name }) {
   const [seed, setSeed] = useState("");
 
   useEffect(() => {
     setSeed(Math.floor(Math.random() * 5000));
   }, []);
 
-  const createChat = () => {
+  const createRoom = async () => {
     const roomName = prompt("please enter name for chat:");
 
-    if(roomName){
-      // do some stuff
+    if (roomName) {
+      await axios.post("/rooms", { name: roomName });
     }
+  };
 
-  }
-
-  return !addNewChat ?(
+  return !addNewChat ? (
     <div className={classes.SidebarChat}>
       <Avatar src={`https://avatars.dicebear.com/api/human/${seed}.svg`} />
       <div className={classes.SidebarChat__info}>
-        <h2>Room name</h2>
+        <h2>{name}</h2>
         <p>This is the last message</p>
       </div>
     </div>
   ) : (
-    <div onClick={createChat} className={classes.SidebarChat}>
+    <div onClick={createRoom} className={classes.SidebarChat}>
       <h3>Add New Chat</h3>
     </div>
   );
