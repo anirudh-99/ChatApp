@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+const mongoose = require("mongoose");
 
 const message = mongoose.Schema({
   message: String,
@@ -7,4 +7,4 @@ const message = mongoose.Schema({
   received: Boolean,
 });
 
-export default mongoose.model("message", message);
+module.exports = mongoose.model("message", message);

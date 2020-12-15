@@ -1,12 +1,16 @@
-import express from "express";
-import mongoose from "mongoose";
-import Pusher from "pusher";
-import cors from "cors";
-import morgan from "morgan";
+const express = require("express");
+const mongoose = require("mongoose");
+const Pusher = require("pusher");
+const cors = require("cors");
+const morgan = require("morgan");
+const dotenv = require("dotenv");
+const authController = require("./controllers/authController");
 
 //importing models
-import Messages from "./models/message.model.js";
-import Rooms from "./models/room.model.js";
+const Messages = require("./models/message.model.js");
+const Rooms = require("./models/room.model.js");
+
+dotenv.config({ path: "./config.env" });
 
 //------------app config-------------
 const app = express();
@@ -26,11 +30,9 @@ app.use(express.json());
 app.use(cors());
 
 //-------------------db config-----------------
-const connectionURL =
-  "mongodb+srv://anirudh:5vJLI9g62rWusBUc@cluster0.pjikp.mongodb.net/whtasappDb?retryWrites=true&w=majority";
 
 mongoose
-  .connect(connectionURL, {
+  .connect(process.env.DB_STRING, {
     useCreateIndex: true,
     useNewUrlParser: true,
     useUnifiedTopology: true,
@@ -60,40 +62,63 @@ mongoose
   });
 
 //-------------api routes--------------------------
-app.get("/", (req, res) => res.status(200).send("hello world"));
 
-app.get("/messages", (req, res) => {
+// additional routes 
+app.post("/login", authController.login);
+app.post("/signup", authController.signUp);
+app.get('/verifyToken/:token',authController.verifyToken);
+
+app.get("/messages", authController.protect, (req, res) => {
   Messages.find()
     .then((data) => res.status(200).send(data))
-    .catch((err) => res.status(500).send(err));
+    .catch((err) =>
+      res.status(500).send({
+        status: "fail",
+        message: err.message,
+      })
+    );
 });
 
 // route for creating new message
-app.post("/messages", (req, res) => {
+app.post("/messages", authController.protect, (req, res) => {
   const message = req.body;
 
   Messages.create(message, (err, data) => {
     if (err) {
-      res.status(500).send(err);
+      return res.status(500).send({
+        status: "fail",
+        message: err.message,
+      });
     } else {
       res.status(201).send(data);
     }
   });
 });
 
-app.get("/rooms", (req, res) => {
+//route for getting all route names
+app.get("/rooms", authController.protect, (req, res) => {
   Rooms.find()
     .then((data) => res.status(200).send(data))
-    .catch((err) => res.status(500).send(err));
+    .catch((err) =>
+      res.status(500).send({
+        status: "fail",
+        message: err.message,
+      })
+    );
 });
 
 // route for creating new rooms
-app.post("/rooms", (req, res) => {
+app.post("/rooms", authController.protect, (req, res) => {
   const room = req.body;
 
   Rooms.create(room)
     .then((data) => res.status(201).send(data))
-    .catch((err) => res.status(500).send(err));
+    .catch((err) =>
+      res.status(500).send({
+        status: "fail",
+        message: err.message,
+      })
+    );
 });
 
 //listen

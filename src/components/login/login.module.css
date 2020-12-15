@@ -1,0 +1,53 @@
+:root {
+  --greyish: rgb(173, 158, 149);
+  --brownish: rgb(70, 57, 47);
+  --light-mud: rgb(156, 110, 76);
+  --thick-mud: rgb(127, 68, 28);
+  --black: rgb(29, 33, 41);
+}
+
+.Login__container {
+  width: 60%;
+  max-width: 500px;
+  height: 50%;
+  padding: 20px;
+  box-shadow: -1px 4px 20px -6px rgba(0, 0, 0, 0.75);
+}
+
+.Login__heading {
+  text-align: center;
+  color: var(--black);
+}
+
+.Login__form > label {
+  font-size: 1.1rem;
+  font-weight: bold;
+}
+
+.Login__form {
+  margin: 10px;
+}
+
+.Login__form > input {
+  width: 100%;
+  padding: 12px 20px;
+  margin-top: 5px;
+  margin-bottom: 8px;
+  border: 1px solid #ccc;
+  box-sizing: border-box;
+}
+
+.Login__form > p {
+  margin-top: 10px;
+}
+
+.Login__button {
+  margin-top: 20px;
+  background-color: var(--light-mud);
+  color: white;
+  padding: 14px 20px;
+  border: none;
+  cursor: pointer;
+  width: 100%;
+  font-size: 1.3rem;
+}

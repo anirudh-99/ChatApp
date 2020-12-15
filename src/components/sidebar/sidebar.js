@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import classes from "./sidebar.module.css";
 import axios from "../../axios";
 import Pusher from "pusher-js";
+import UserContext from "../../context/userContext";
 
 //import components
 import SidebarChat from "../sidebarChat/sidebarChat";
@@ -15,15 +16,21 @@ import SearchOutlinedIcon from "@material-ui/icons/SearchOutlined";
 
 function Sidebar() {
   let [rooms, setRooms] = useState([]);
+  const { userData } = useContext(UserContext);
 
   useEffect(() => {
+    let token = userData.token;
     axios
-      .get("/rooms")
+      .get("/rooms", {
+        headers: {
+          Authorization: "Bearer " + token,
+        },
+      })
       .then((res) => {
         setRooms(res.data);
       })
-      .catch((err) => console.log(err));
-  }, []);
+      .catch((err) => console.log(err.response));
+  }, [userData]);
 
   useEffect(() => {
     const pusher = new Pusher("f891c6ff78f3484303a0", {

@@ -1,8 +1,9 @@
-import React, { useState,useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import classes from "./chat.module.css";
 import { Avatar, IconButton } from "@material-ui/core";
-import axios from '../../axios';
-import Pusher from 'pusher-js';
+import axios from "../../axios";
+import Pusher from "pusher-js";
+import { useParams } from "react-router-dom";
 
 //material-ui imports
 import SearchOutlinedIcon from "@material-ui/icons/SearchOutlined";
@@ -14,6 +15,20 @@ import MicIcon from "@material-ui/icons/Mic";
 function Chat() {
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState([]);
+  const { roomId } = useParams();
+  const [roomName, setRoomName] = useState("");
+  const [seed, setSeed] = useState(0);
+
+  //get the room name from room Id and change seed
+  useEffect(() => {
+    axios.get("/rooms").then((res) => {
+      const rooms = res.data;
+      const room = rooms.find((el) => el._id === roomId);
+      setRoomName(room.name);
+    });
+
+    setSeed(Math.floor(Math.random() * 5000));
+  }, [roomId]);
 
   //fetch messages initially
   useEffect(() => {
@@ -40,6 +55,7 @@ function Chat() {
     };
   }, [messages]);
 
+  //post message onto database
   const sendMessage = async (e) => {
     e.preventDefault();
     await axios.post("/messages", {
@@ -55,10 +71,10 @@ function Chat() {
   return (
     <div className={classes.Chat}>
       <div className={classes.Chat__header}>
-        <Avatar />
+        <Avatar src={`https://avatars.dicebear.com/api/human/${seed}.svg`} />
 
         <div className={classes.Chat__headerInfo}>
-          <h3>Room name</h3>
+          <h3>{roomName}</h3>
           <p>last seen at ...</p>
         </div>
 
@@ -76,7 +92,7 @@ function Chat() {
       </div>
 
       <div className={classes.Chat__body}>
-        {messages.map((message,index) => {
+        {messages.map((message, index) => {
           return (
             <p
               className={[
