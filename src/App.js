@@ -16,7 +16,8 @@ function App() {
   });
 
   const history = useHistory();
-
+  
+  // extract token from local storage and validate it to login automatically
   useEffect(() => {
     const validateToken = async () => {
       //check if token is present in local storage
@@ -35,7 +36,7 @@ function App() {
 
       setUserData({
         token,
-        user: verifyTokenRes.user,
+        user: verifyTokenRes.data.user,
       });
     };
     validateToken();

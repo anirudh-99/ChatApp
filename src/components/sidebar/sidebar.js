@@ -38,8 +38,7 @@ function Sidebar() {
     });
 
     const channel = pusher.subscribe("rooms");
-    channel.bind("inserted", (newRoom) => {
-      // alert(JSON.stringify(newMessage));
+    channel.bind("room added", (newRoom) => {
       setRooms([...rooms, newRoom]);
     });
 

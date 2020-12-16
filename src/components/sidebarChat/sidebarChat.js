@@ -1,13 +1,15 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import classes from "./sidebarChat.module.css";
 import axios from "../../axios";
-import {Link} from 'react-router-dom';
+import { Link } from "react-router-dom";
+import UserContext from "../../context/userContext";
 
 //material-ui imports
 import { Avatar } from "@material-ui/core";
 
 function SidebarChat({ addNewChat, id, name }) {
   const [seed, setSeed] = useState("");
+  const { userData } = useContext(UserContext);
 
   useEffect(() => {
     setSeed(Math.floor(Math.random() * 5000));
@@ -17,7 +19,15 @@ function SidebarChat({ addNewChat, id, name }) {
     const roomName = prompt("please enter name for chat:");
 
     if (roomName) {
-      await axios.post("/rooms", { name: roomName });
+      await axios.post(
+        "/rooms",
+        { name: roomName },
+        {
+          headers: {
+            Authorization: "Bearer " + userData.token,
+          },
+        }
+      );
     }
   };
 

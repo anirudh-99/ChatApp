@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import classes from "./chat.module.css";
 import { Avatar, IconButton } from "@material-ui/core";
 import axios from "../../axios";
 import Pusher from "pusher-js";
 import { useParams } from "react-router-dom";
+import UserContext from "../../context/userContext";
 
 //material-ui imports
 import SearchOutlinedIcon from "@material-ui/icons/SearchOutlined";
@@ -19,33 +20,49 @@ function Chat() {
   const [roomName, setRoomName] = useState("");
   const [seed, setSeed] = useState(0);
 
+  const { userData } = useContext(UserContext);
+  let token = userData.token;
+  let currUser = userData.user;
+
   //get the room name from room Id and change seed
   useEffect(() => {
-    axios.get("/rooms").then((res) => {
-      const rooms = res.data;
-      const room = rooms.find((el) => el._id === roomId);
-      setRoomName(room.name);
-    });
+    axios
+      .get("/rooms", {
+        headers: {
+          Authorization: "Bearer " + token,
+        },
+      })
+      .then((res) => {
+        const rooms = res.data;
+        const room = rooms.find((el) => el._id === roomId);
+        setRoomName(room.name);
+      });
 
     setSeed(Math.floor(Math.random() * 5000));
-  }, [roomId]);
+  }, [roomId, token]);
 
   //fetch messages initially
   useEffect(() => {
-    axios.get("/messages").then((res) => {
-      setMessages(res.data);
-    });
-  }, []);
+    axios
+      .get(`/rooms/${roomId}/messages`, {
+        headers: {
+          Authorization: "Bearer " + token,
+        },
+      })
+      .then((res) => {
+        setMessages(res.data.data.messages);
+      });
+  }, [token, roomId]);
 
-  //listener for a channel in pusher
+  //listener for "messages" channel in pusher
   useEffect(() => {
     const pusher = new Pusher("f891c6ff78f3484303a0", {
       cluster: "ap2",
     });
 
     const channel = pusher.subscribe("messages");
-    channel.bind("inserted", (newMessage) => {
-      // alert(JSON.stringify(newMessage));
+    channel.bind("message added", (data) => {
+      const newMessage = data._doc;
       setMessages([...messages, newMessage]);
     });
 
@@ -58,12 +75,22 @@ function Chat() {
   //post message onto database
   const sendMessage = async (e) => {
     e.preventDefault();
-    await axios.post("/messages", {
-      message: input,
-      name: "demo name",
-      timestamp: new Date().toUTCString(),
-      received: true,
-    });
+    console.log();
+
+    await axios.patch(
+      `/rooms/${roomId}/messages`,
+      {
+        message: input,
+        name: currUser.name,
+        userId: currUser._id,
+        timestamp: new Date().toUTCString(),
+      },
+      {
+        headers: {
+          Authorization: "Bearer " + token,
+        },
+      }
+    );
 
     setInput("");
   };
@@ -97,7 +124,7 @@ function Chat() {
             <p
               className={[
                 classes.Chat__message,
-                message.received ? classes.Chat__receiver : "",
+                message.userId === currUser._id ? classes.Chat__receiver : "",
               ].join(" ")}
               key={index}
             >
