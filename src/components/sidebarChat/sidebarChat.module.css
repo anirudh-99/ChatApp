@@ -10,10 +10,19 @@
 }
 
 .SidebarChat__info > h2 {
-  font-size: 16px;
-  margin-bottom: 8px;
+  font-size: 20px;
 }
 
 .SidebarChat__info{
+    display:flex;
+    flex-direction: column;
+    margin:0;
+    align-content: center;
+    justify-content: center;
     margin-left: 15px;
+}
+
+.Room__links{
+  text-decoration: none;
+  color: black;
 }

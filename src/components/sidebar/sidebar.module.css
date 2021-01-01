@@ -15,13 +15,27 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  min-width: 10vw;
 }
 
-.Sidebar__headerRight > * {
-  margin-right: 2vw;
-  font-size: 100px !important;
+.Sidebar__headerRight > button {
+  padding: 10px;
+  background-color: rgb(232, 82, 64);
+  color: white;
+  border:none;
+  font-weight: bold;
+  border-radius: 5px;
 }
+
+.Sidebar__headerRight > button:focus{
+  outline: none;
+}
+
+.Sidebar__headerRight > button:hover{
+  background-color: rgb(223, 69, 52);
+  cursor: pointer;
+
+}
+
 
 .Sidebar__search {
   display: flex;
@@ -56,5 +70,3 @@
   background-color: white;
   overflow: scroll;
 }
-
-

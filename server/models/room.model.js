@@ -17,4 +17,3 @@ const room = mongoose.Schema({
 
 module.exports = mongoose.model("room", room);
 
-// /rooms/1dfk34kdf/messages

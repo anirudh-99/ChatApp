@@ -3,6 +3,7 @@ import classes from "./sidebar.module.css";
 import axios from "../../axios";
 import Pusher from "pusher-js";
 import UserContext from "../../context/userContext";
+import {useHistory} from 'react-router-dom';
 
 //import components
 import SidebarChat from "../sidebarChat/sidebarChat";
@@ -17,6 +18,8 @@ import SearchOutlinedIcon from "@material-ui/icons/SearchOutlined";
 function Sidebar() {
   let [rooms, setRooms] = useState([]);
   const { userData } = useContext(UserContext);
+
+  const history = useHistory();
 
   useEffect(() => {
     let token = userData.token;
@@ -48,20 +51,20 @@ function Sidebar() {
     };
   }, [rooms]);
 
+  const logout = () => {
+    localStorage.setItem('auth-token',"");
+    history.push('/login');
+  }
+
   return (
     <div className={classes.Sidebar}>
       <div className={classes.Sidebar__header}>
         <Avatar src="" />
         <div className={classes.Sidebar__headerRight}>
-          <IconButton>
-            <DonutLargeIcon />
-          </IconButton>
-          <IconButton>
-            <ChatIcon />
-          </IconButton>
-          <IconButton>
+          {/* <IconButton>
             <MoreVertIcon />
-          </IconButton>
+          </IconButton> */}
+          <button onClick={logout}>Logout</button>
         </div>
       </div>
 

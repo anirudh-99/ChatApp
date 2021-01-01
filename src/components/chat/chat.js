@@ -75,14 +75,14 @@ function Chat() {
   //post message onto database
   const sendMessage = async (e) => {
     e.preventDefault();
-    console.log();
+    console.log({userData});
 
     await axios.patch(
       `/rooms/${roomId}/messages`,
       {
         message: input,
         name: currUser.name,
-        userId: currUser._id,
+        userId: currUser.id,
         timestamp: new Date().toUTCString(),
       },
       {
@@ -102,7 +102,7 @@ function Chat() {
 
         <div className={classes.Chat__headerInfo}>
           <h3>{roomName}</h3>
-          <p>last seen at ...</p>
+          
         </div>
 
         <div className={classes.Chat__headerRight}>
@@ -124,7 +124,7 @@ function Chat() {
             <p
               className={[
                 classes.Chat__message,
-                message.userId === currUser._id ? classes.Chat__receiver : "",
+                message.userId === currUser.id ? classes.Chat__receiver : "",
               ].join(" ")}
               key={index}
             >

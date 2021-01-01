@@ -6,6 +6,8 @@ const morgan = require("morgan");
 const dotenv = require("dotenv");
 const authController = require("./controllers/authController");
 
+const roomRoutes = require("./routes/roomRoutes");
+
 //importing models
 const Rooms = require("./models/room.model.js");
 
@@ -40,16 +42,6 @@ mongoose
   .then(() => {
     console.log("db connection successful");
 
-    // //Change stream for "Messages" collection
-    // Messages.watch().on("change", (change) => {
-    //   if (change.operationType === "insert") {
-    //     const message = change.fullDocument;
-    //     pusher.trigger("messages", "inserted", {
-    //       ...message,
-    //     });
-    //   }
-    // });
-
     //change stream for "Rooms" collection
     Rooms.watch().on("change", async (change) => {
       if (change.operationType === "insert") {
@@ -58,10 +50,6 @@ mongoose
           ...room,
         });
       } else if (change.operationType === "update") {
-        // clusterTime: Timestamp { _bsontype: 'Timestamp', low_: 2, high_: 1608126502 },
-        // ns: { db: 'whtasappDb', coll: 'rooms' },
-        // documentKey: { _id: 5fda0df83dfdbb686ffd177f },
-        // updateDescription: { updatedFields: { 'messages.2': [Object] }, removedFields: [] }
         const roomId = change.documentKey._id;
         let lastAddedMsg = await Rooms.findById(roomId).select({
           messages: { $slice: -1 },
@@ -74,63 +62,12 @@ mongoose
 
 //-------------api routes--------------------------
 
-// additional routes
+// authentication routes
 app.post("/login", authController.login);
 app.post("/signup", authController.signUp);
 app.get("/verifyToken/:token", authController.verifyToken);
 
-//route for getting all room names
-app.get("/rooms", authController.protect, (req, res) => {
-  Rooms.find()
-    .then((data) => res.status(200).send(data))
-    .catch((err) =>
-      res.status(500).send({
-        status: "fail",
-        message: err.message,
-      })
-    );
-});
+app.use("/rooms", roomRoutes);
 
-// route for creating new rooms
-app.post("/rooms", authController.protect, (req, res) => {
-  const room = req.body;
-
-  Rooms.create(room)
-    .then((data) => res.status(201).send(data))
-    .catch((err) =>
-      res.status(500).send({
-        status: "fail",
-        message: err.message,
-      })
-    );
-});
-
-// route for getting all messages in a room
-app.get("/rooms/:roomId/messages", authController.protect, async (req, res) => {
-  const roomId = req.params.roomId;
-
-  const messages = await Rooms.findById(roomId).select("messages -_id");
-  res.status(200).json({ status: "success", data: messages });
-});
-
-app.patch(
-  "/rooms/:roomId/messages",
-  authController.protect,
-  async (req, res) => {
-    const roomId = req.params.roomId;
-    const updatedRoom = await Rooms.findByIdAndUpdate(
-      roomId,
-      {
-        $push: { messages: req.body },
-      },
-      { new: true }
-    );
-
-    res
-      .status(200)
-      .json({ status: "success", message: "message successfully added" });
-  }
-);
-
-//listen
+//start server
 app.listen(port, () => console.log(`listening on localhost:${port}`));
